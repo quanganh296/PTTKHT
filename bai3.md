@@ -1,0 +1,6 @@
+
+1. Con người (People): Bao gồm người dùng (khách hàng đặt món), nhà hàng (cung cấp món ăn), tài xế giao hàng, và nhân viên quản trị hệ thống (duy trì, hỗ trợ kỹ thuật). Mỗi nhóm người có vai trò tương tác khác nhau với hệ thống.
+2. Dữ liệu (Data): Gồm thông tin về người dùng (tài khoản, địa chỉ, phương thức thanh toán), nhà hàng (tên, thực đơn, giá, đánh giá), đơn hàng (món ăn, số lượng, trạng thái giao hàng) và phản hồi của khách hàng. Dữ liệu này được lưu trữ và cập nhật liên tục để đảm bảo hoạt động chính xác.
+3. Quy trình (Procedures): Là chuỗi các bước xử lý nghiệp vụ: khách hàng đăng nhập → chọn món → đặt hàng → thanh toán → nhà hàng xác nhận → tài xế nhận đơn → giao hàng → khách hàng nhận món và đánh giá. Ngoài ra còn có quy trình quản lý nhà hàng, xử lý sự cố và hoàn tiền.
+4. Phần mềm (Software): Bao gồm ứng dụng di động và website cho người dùng, hệ thống quản lý nhà hàng, phần mềm quản lý tài xế, và hệ thống máy chủ backend điều phối đơn hàng, tính toán phí, và quản lý cơ sở dữ liệu.
+5. Phần cứng (Hardware): Gồm điện thoại thông minh, máy tính bảng của người dùng và nhà hàng, máy chủ (server) lưu trữ dữ liệu và xử lý yêu cầu, cùng với thiết bị mạng như router, modem giúp kết nối Internet.

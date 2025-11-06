@@ -1,0 +1,5 @@
+A. Mô tả chức năng người dùng có thể thực hiện trên ứng dụng học tiếng Anh	: Use Case Diagram (Sơ đồ ca sử dụng)	
+B. Mô tả lớp NguoiDung, KhoaHoc, BaiHoc và quan hệ giữa chúng: Class Diagram (Sơ đồ lớp)	
+C. Mô tả luồng học viên bắt đầu → vào học → làm bài → hoàn thành: Activity Diagram (Sơ đồ hoạt động)	
+D. Mô tả cách hệ thống triển khai trên các máy chủ, thiết bị: Deployment Diagram (Sơ đồ triển khai)	
+E. Mô tả thứ tự tương tác giữa học viên và hệ thống khi nộp bài: Sequence Diagram (Sơ đồ tuần tự)
