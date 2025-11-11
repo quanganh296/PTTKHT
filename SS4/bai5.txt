@@ -1,0 +1,19 @@
+Class: Order
+---------------------------
+| Thuộc tính               |
+---------------------------
+| orderID : String         |
+| customerID : String      |
+| orderDate : Date         |
+| orderStatus : String     |
+| totalAmount : Float      |
+---------------------------
+
+---------------------------
+| Phương thức             |
+---------------------------
+| createOrder() : void     |
+| cancelOrder() : void     |
+| calculateTotal() : Float |
+| updateStatus(status:String) : void |
+---------------------------
