@@ -21,5 +21,3 @@ Hệ thống cần tích hợp các **dịch vụ ngoài** (External Service) nh
 | **Data Access Layer** | Truy xuất dữ liệu: sản phẩm, đơn hàng, khách hàng. Thực hiện các phương thức CRUD. |
 | **VNPay Service (External)** | Thực hiện thanh toán online, trả kết quả giao dịch cho hệ thống. |
 | **SMTP Service (External)** | Gửi email xác nhận tới khách hàng sau khi thanh toán thành công. |
-
----

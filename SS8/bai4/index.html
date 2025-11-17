@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Đơn hàng - Hệ thống Quản lý</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* === NGUYÊN TẮC UI/UX ÁP DỤNG ===
+         * 1. Clarity & Readability: Font rõ, khoảng cách rộng, căn giữa cột số, căn trái văn bản.
+         * 2. Visual Hierarchy: Tiêu đề > Bảng > Phân trang.
+         * 3. Consistency: Màu sắc trạng thái cố định, nút chi tiết thống nhất.
+         * 4. Accessibility: aria-label, hover/focus rõ, contrast ≥4.5:1.
+         * 5. Responsive: Bảng cuộn ngang trên mobile, phân trang full-width.
+         * 6. Micro-interactions: Hover row, button lift, trạng thái badge nổi bật.
+         */
+
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 16px rgba(0,0,0,.12);
+            --transition: all .2s ease;
+            --font-base: 1rem;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 0 0 .5rem;
+        }
+
+        .page-subtitle {
+            font-size: .9375rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        /* === TABLE STYLES === */
+        .table-container {
+            background: #fff;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .9375rem;
+        }
+
+        thead {
+            background: var(--gray-100);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: .875rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        th.text-center { text-align: center; }
+        th.text-right { text-align: right; }
+
+        tbody tr {
+            border-bottom: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        tbody tr:hover {
+            background: var(--gray-50);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+        td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        /* Cột STT & Mã đơn: căn giữa */
+        td.text-center { text-align: center; }
+
+        /* Cột Tên khách & Trạng thái: căn trái */
+        td .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .35rem .75rem;
+            border-radius: 2rem;
+            font-size: .8125rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            white-space: nowrap;
+        }
+
+        .status-processing {
+            background: rgba(245, 158, 11, .15);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, .15);
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, .15);
+            color: var(--danger);
+        }
+
+        .status-badge i {
+            font-size: .875rem;
+        }
+
+        /* Nút Chi tiết */
+        .btn-detail {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .5rem .875rem;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-detail:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-detail i {
+            font-size: 1rem;
+        }
+
+        /* === PAGINATION === */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            padding: 1.5rem 1rem;
+            background: #fff;
+            border-top: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            font-size: .875rem;
+            color: var(--gray-600);
+            margin-right: auto;
+        }
+
+        .pagination-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 .75rem;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .pagination-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        .pagination-btn i {
+            font-size: 1rem;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem auto;
+                padding: 0 .5rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 700px;
+            }
+
+            th, td {
+                padding: .75rem .5rem;
+                font-size: .875rem;
+            }
+
+            .btn-detail {
+                padding: .4rem .7rem;
+                font-size: .8125rem;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pagination-info {
+                margin-right: 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1 class="page-title">Danh sách Đơn hàng</h1>
+            <p class="page-subtitle">Quản lý và theo dõi trạng thái đơn hàng của khách hàng</p>
+        </header>
+
+        <div class="table-container" role="region" aria-labelledby="table-title">
+            <table aria-label="Danh sách đơn hàng">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 8%;">STT</th>
+                        <th style="width: 15%;">Mã đơn</th>
+                        <th style="width: 30%;">Tên khách</th>
+                        <th style="width: 22%;">Trạng thái</th>
+                        <th class="text-center" style="width: 15%;">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu mẫu (10 đơn hàng/trang) -->
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td><code>#DH001234</code></td>
+                        <td>Nguyễn Văn An</td>
+                        <td>
+                            <span class="status-badge status-processing">
+                                <i class="fas fa-clock"></i> Đang xử lý
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001234')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">2</td>
+                        <td><code>#DH001235</code></td>
+                        <td>Trần Thị Bình</td>
+                        <td>
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Hoàn thành
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001235')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">3</td>
+                        <td><code>#DH001236</code></td>
+                        <td>Lê Minh Châu</td>
+                        <td>
+                            <span class="status-badge status-cancelled">
+                                <i class="fas fa-times-circle"></i> Hủy
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001236')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">4</td>
+                        <td><code>#DH001237</code></td>
+                        <td>Phạm Quốc Dũng</td>
+                        <td>
+                            <span class="status-badge status-processing">
+                                <i class="fas fa-clock"></i> Đang xử lý
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001237')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">5</td>
+                        <td><code>#DH001238</code></td>
+                        <td>Hoàng Thị Lan</td>
+                        <td>
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Hoàn thành
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001238')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">6</td>
+                        <td><code>#DH001239</code></td>
+                        <td>Vũ Văn Hùng</td>
+                        <td>
+                            <span class="status-badge status-processing">
+                                <i class="fas fa-clock"></i> Đang xử lý
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001239')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">7</td>
+                        <td><code>#DH001240</code></td>
+                        <td>Đỗ Thị Mai</td>
+                        <td>
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Hoàn thành
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001240')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">8</td>
+                        <td><code>#DH001241</code></td>
+                        <td>Bùi Văn Nam</td>
+                        <td>
+                            <span class="status-badge status-cancelled">
+                                <i class="fas fa-times-circle"></i> Hủy
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001241')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">9</td>
+                        <td><code>#DH001242</code></td>
+                        <td>Ngô Thị Oanh</td>
+                        <td>
+                            <span class="status-badge status-processing">
+                                <i class="fas fa-clock"></i> Đang xử lý
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001242')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">10</td>
+                        <td><code>#DH001243</code></td>
+                        <td>Trịnh Văn Phong</td>
+                        <td>
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Hoàn thành
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-detail" onclick="viewDetail('DH001243')">
+                                <i class="fas fa-eye"></i> Xem
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <nav class="pagination" aria-label="Phân trang đơn hàng">
+            <span class="pagination-info">Hiển thị 1-10 của 53 đơn hàng</span>
+            
+            <button class="pagination-btn" onclick="prevPage()" id="prevBtn">
+                <i class="fas fa-chevron-left"></i> Trước
+            </button>
+
+            <button class="pagination-btn active">1</button>
+            <button class="pagination-btn" onclick="goToPage(2)">2</button>
+            <button class="pagination-btn" onclick="goToPage(3)">3</button>
+            <span class="pagination-btn">...</span>
+            <button class="pagination-btn" onclick="goToPage(6)">6</button>
+
+            <button class="pagination-btn" onclick="nextPage()" id="nextBtn">
+                Sau <i class="fas fa-chevron-right"></i>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // Mô phỏng hành động xem chi tiết
+        function viewDetail(orderId) {
+            alert(`Đang mở chi tiết đơn hàng: ${orderId}\n(Thực tế: chuyển đến trang chi tiết hoặc mở modal)`);
+        }
+
+        // Phân trang (demo)
+        let currentPage = 1;
+        const totalPages = 6;
+
+        function updatePagination() {
+            document.querySelectorAll('.pagination-btn').forEach(btn => {
+                if (btn.textContent && !isNaN(btn.textContent)) {
+                    btn.classList.toggle('active', parseInt(btn.textContent) === currentPage);
+                }
+            });
+
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+
+            document.querySelector('.pagination-info').textContent = 
+                `Hiển thị ${(currentPage - 1) * 10 + 1}-${Math.min(currentPage * 10, 53)} của 53 đơn hàng`;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                loadPage(currentPage);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                loadPage(currentPage);
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            updatePagination();
+            loadPage(page);
+        }
+
+        function loadPage(page) {
+            // Thực tế: gọi API để load dữ liệu trang `page`
+            console.log(`Đang tải trang ${page}...`);
+            // Ví dụ: fetch(`/api/orders?page=${page}`).then(...)
+        }
+
+        // Khởi tạo
+        updatePagination();
+    </script>
+</body>
+</html>

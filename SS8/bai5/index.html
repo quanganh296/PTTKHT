@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký tài khoản - Hệ thống Quản lý</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* === NGUYÊN TẮC UI/UX ÁP DỤNG ===
+         * 1. Clarity & Simplicity: Chỉ hiển thị 1 nhóm trường tại một thời điểm (multi-step).
+         * 2. Progressive Disclosure: Chia form thành 3 bước → giảm áp lực nhận thức.
+         * 3. Error Visibility: Lỗi hiển thị ngay dưới trường, màu đỏ, icon cảnh báo.
+         * 4. Visual Feedback: Progress bar, nút "Tiếp theo" nổi bật, hover/focus rõ.
+         * 5. Accessibility: aria-live cho lỗi, label for/id, keyboard navigable.
+         * 6. Aesthetics: Căn giữa, shadow, animation mượt, avatar preview.
+         */
+
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 16px rgba(0,0,0,.12);
+            --transition: all .2s ease;
+            --font-base: 1rem;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: var(--gray-900);
+        }
+
+        .register-container {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: fadeIn .5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .register-header {
+            text-align: center;
+            padding: 2rem 1.5rem 1rem;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .register-title {
+            margin: 0 0 .5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .register-subtitle {
+            margin: 0;
+            font-size: .9375rem;
+            color: var(--gray-600);
+        }
+
+        /* === PROGRESS BAR === */
+        .progress-container {
+            padding: 1.5rem 1.5rem .5rem;
+            background: var(--gray-50);
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            transition: width .4s ease;
+            z-index: 1;
+        }
+
+        .step {
+            width: 36px;
+            height: 36px;
+            background: var(--gray-200);
+            color: var(--gray-600);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: .875rem;
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(67,97,238,.25);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: .5rem;
+            font-size: .75rem;
+            color: var(--gray-600);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        .step.active .step-label,
+        .step.completed .step-label {
+            opacity: 1;
+        }
+
+        /* === FORM BODY === */
+        .form-body {
+            padding: 1.5rem;
+            min-height: 380px;
+            position: relative;
+        }
+
+        .form-step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .4s ease, visibility .4s ease;
+        }
+
+        .form-step.active {
+            opacity: 1;
+            visibility: visible;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: .5rem;
+            font-weight: 500;
+            font-size: .9375rem;
+            color: var(--gray-800);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: .75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            background: #fff;
+            transition: var(--transition);
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67,97,238,.25);
+        }
+
+        /* Password toggle */
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray-600);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--gray-900);
+        }
+
+        /* Avatar upload */
+        .avatar-upload {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            background-size: cover;
+            background-position: center;
+            border: 3px solid var(--gray-300);
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .avatar-upload input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            padding: .5rem 1rem;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px dashed var(--gray-400);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: .875rem;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .upload-btn:hover {
+            background: var(--gray-200);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Error message */
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            margin-top: .5rem;
+            font-size: .8125rem;
+            color: var(--danger);
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .error-message i {
+            font-size: .875rem;
+        }
+
+        /* === ACTION BUTTONS === */
+        .form-actions {
+            display: flex;
+            gap: .75rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: .75rem 1.5rem;
+            font-size: .9375rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            min-width: 110px;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+       .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === SUCCESS MESSAGE === */
+        .success-screen {
+            text-align: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            animation: bounce .6s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 .5rem;
+            color: var(--success);
+        }
+
+        .success-text {
+            color: var(--gray-600);
+            margin: 0 0 1.5rem;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 480px) {
+            .register-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .register-header,
+            .progress-container {
+                padding: 1.5rem 1rem;
+            }
+
+            .form-body {
+                padding: 1rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .step-label {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container" role="main" aria-labelledby="register-title">
+        <!-- Header -->
+        <header class="register-header">
+            <h1 id="register-title" class="register-title">Đăng ký tài khoản</h1>
+            <p class="register-subtitle">Vui lòng điền đầy đủ thông tin</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33.33%;"></div>
+                <div class="step active" data-step="1"><span class="step-label">Thông tin</span></div>
+                <div class="step" data-step="2"><span class="step-label">Bảo mật</span></div>
+                <div class="step" data-step="3"><span class="step-label">Hoàn tất</span></div>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <div class="form-body">
+            <form id="registerForm" novalidate>
+                <!-- Bước 1: Thông tin cá nhân -->
+                <div class="form-step active" data-step="1">
+                    <div class="form-group">
+                        <label for="fullName">Họ tên <span class="text-danger">*</span></label>
+                        <input type="text" id="fullName" placeholder="Nguyễn Văn A" required>
+                        <div class="error-message" id="fullNameError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Vui lòng nhập họ tên hợp lệ (không chứa ký tự đặc biệt)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email <span class="text-danger">*</span></label>
+                        <input type="email" id="email" placeholder="example@domain.com" required>
+                        <div class="error-message" id="emailError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Email không hợp lệ. Vui lòng kiểm tra lại.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Giới tính</label>
+                        <select id="gender">
+                            <option value="">Chọn giới tính</option>
+                            <option value="male">Nam</option>
+                            <option value="female">Nữ</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bước 2: Bảo mật & Avatar -->
+                <div class="form-step" data-step="2">
+                    <div class="form-group">
+                        <label for="password">Mật khẩu <span class="text-danger">*</span></label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" placeholder="Nhập mật khẩu" required>
+                            <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="error-message" id="passwordError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ cái và ký tự đặc biệt</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ảnh đại diện</label>
+                        <div class="avatar-upload">
+                            <div class="avatar-preview" id="avatarPreview"></div>
+                            <label class="upload-btn">
+                                <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh
+                                <input type="file" id="avatar" accept="image/png,image/jpeg">
+                            </label>
+                        </div>
+                        <div class="error-message" id="avatarError">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Chỉ chấp nhận file PNG hoặc JPG</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bước 3: Hoàn tất -->
+                <div class="form-step" data-step="3">
+                    <div class="success-screen">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h2 class="success-title">Đăng ký thành công!</h2>
+                        <p class="success-text">Tài khoản của bạn đã được tạo. Vui lòng kiểm tra email để xác nhận.</p>
+                    </div>
+                </div>
+
+                <!-- Nút điều khiển -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" style="display:none;">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">
+                        Tiếp theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display:none;">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // === BIẾN TOÀN CỤC ===
+        let currentStep = 1;
+        const totalSteps = 3;
+        const form = document.getElementById('registerForm');
+        const steps = document.querySelectorAll('.form-step');
+        const progressFill = document.querySelector('.progress-fill');
+        const stepIndicators = document.querySelectorAll('.step');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // === HÀM HIỂN THỊ LỖI ===
+        function showError(fieldId, errorId, message) {
+            const errorEl = document.getElementById(errorId);
+            errorEl.querySelector('span').textContent = message;
+            errorEl.classList.add('show');
+            document.getElementById(fieldId).setAttribute('aria-invalid', 'true');
+        }
+
+        function hideError(fieldId, errorId) {
+            const errorEl = document.getElementById(errorId);
+            errorEl.classList.remove('show');
+            document.getElementById(fieldId).removeAttribute('aria-invalid');
+        }
+
+        function hideAllErrors() {
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('input, select').forEach(el => el.removeAttribute('aria-invalid'));
+        }
+
+        // === KIỂM TRA DỮ LIỆU ===
+        function validateStep1() {
+            hideAllErrors();
+            let valid = true;
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            // Họ tên
+            if (!fullName) {
+                showError('fullName', 'fullNameError', 'Vui lòng nhập họ tên');
+                valid = false;
+            } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(fullName)) {
+                showError('fullName', 'fullNameError', 'Họ tên không được chứa số hoặc ký tự đặc biệt');
+                valid = false;
+            }
+
+            // Email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                showError('email', 'emailError', 'Vui lòng nhập email');
+                valid = false;
+            } else if (!emailRegex.test(email)) {
+                showError('email', 'emailError', 'Email không hợp lệ. Ví dụ: example@domain.com');
+                valid = false;
+            }
+
+            return valid;
+        }
+
+        function validateStep2() {
+            hideAllErrors();
+            let valid = true;
+
+            const password = document.getElementById('password').value;
+            const avatar = document.getElementById('avatar').files[0];
+
+            // Mật khẩu
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?~`-]).{8,}$/;
+            if (!password) {
+                showError('password', 'passwordError', 'Vui lòng nhập mật khẩu');
+                valid = false;
+            } else if (!passwordRegex.test(password)) {
+                showError('password', 'passwordError', 'Mật khẩu phải ≥8 ký tự, có chữ cái và ký tự đặc biệt');
+                valid = false;
+            }
+
+            // Avatar (tùy chọn, nhưng nếu có thì kiểm tra định dạng)
+            if (avatar) {
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                if (!validTypes.includes(avatar.type)) {
+                    showError('avatar', 'avatarError', 'Chỉ chấp nhận file PNG hoặc JPG');
+                    valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        // === CHUYỂN BƯỚC ===
+        function goToStep(step) {
+            // Ẩn tất cả
+            steps.forEach(s => s.classList.remove('active'));
+            stepIndicators.forEach(ind => {
+                ind.classList.remove('active', 'completed');
+            });
+
+            // Hiển thị bước hiện tại
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+
+            // Cập nhật progress
+            const progress = ((step - 1) / (totalSteps - 1)) * 100;
+            progressFill.style.width = `${progress}%`;
+
+            // Cập nhật indicator
+            for (let i = 1; i <= totalSteps; i++) {
+                const ind = document.querySelector(`.step[data-step="${i}"]`);
+                if (i < step) ind.classList.add('completed');
+                if (i === step) ind.classList.add('active');
+            }
+
+            // Cập nhật nút
+            prevBtn.style.display = step === 1 ? 'none' : 'flex';
+            nextBtn.style.display = step === totalSteps ? 'none' : 'flex';
+            submitBtn.style.display = step === totalSteps ? 'flex' : 'none';
+
+            currentStep = step;
+        }
+
+        // === SỰ KIỆN NÚT ===
+        nextBtn.addEventListener('click', () => {
+            if (currentStep === 1 && validateStep1()) {
+                goToStep(2);
+            } else if (currentStep === 2 && validateStep2()) {
+                goToStep(3);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+
+        // === XỬ LÝ FORM SUBMIT ===
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (validateStep1() && validateStep2()) {
+                // Thực tế: gọi API đăng ký
+                setTimeout(() => {
+                    alert('Đăng ký thành công! (Demo)');
+                    // Reset form
+                    form.reset();
+                    document.getElementById('avatarPreview').style.backgroundImage = '';
+                    goToStep(1);
+                }, 800);
+            }
+        });
+
+        // === AVATAR PREVIEW ===
+        document.getElementById('avatar').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('avatarPreview').style.backgroundImage = `url(${ev.target.result})`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // === PASSWORD TOGGLE ===
+        document.querySelector('.password-toggle').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // === KHỞI TẠO ===
+        goToStep(1);
+    </script>
+</body>
+</html>

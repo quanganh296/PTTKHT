@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống Quản lý Sinh viên</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* === NGUYÊN TẮC UI/UX ÁP DỤNG ===
+         * 1. Simplicity & Clarity: Chỉ hiển thị các thành phần cần thiết, nhãn rõ ràng, placeholder hướng dẫn.
+         * 2. Consistency: Font (Inter), khoảng cách (8px grid), màu sắc thống nhất (primary #0d6efd).
+         * 3. Visual Hierarchy: Tiêu đề > Form > CTA nổi bật.
+         * 4. Accessibility: 
+         *    - aria-label, for/id pairing
+         *    - contrast ≥4.5:1
+         *    - keyboard navigable (tabindex)
+         * 5. Responsive: Flexbox + media queries (mobile ≤480px, desktop ≥1024px).
+         * 6. Micro-interactions: Hover/focus states, password toggle smooth.
+         */
+
+        :root {
+            --primary: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --gray-100: #f8f9fa;
+            --gray-300: #dee2e6;
+            --gray-600: #6c757d;
+            --gray-900: #212529;
+            --radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+            --transition: all .2s ease;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4ecf7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: var(--gray-900);
+        }
+
+        .login-container {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+            animation: fadeIn .4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            padding: 2rem 1.5rem 1rem;
+            background: var(--gray-100);
+        }
+
+        .login-header h1 {
+            margin: 0 0 .5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .login-header p {
+            margin: 0;
+            font-size: .875rem;
+            color: var(--gray-600);
+        }
+
+        .login-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: .5rem;
+            font-weight: 500;
+            font-size: .875rem;
+            color: var(--gray-900);
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: .75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            transition: var(--transition);
+            background: #fff;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,110,253,.25);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--gray-900);
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-size: .875rem;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input {
+            margin-right: .5rem;
+            accent-color: var(--primary);
+        }
+
+        .forgot-link {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: .85rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-login:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .login-footer {
+            text-align: center;
+            padding: 1rem 1.5rem 1.5rem;
+            font-size: .8125rem;
+            color: var(--gray-600);
+            background: var(--gray-100);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            .login-header {
+                padding: 1.5rem 1rem .5rem;
+            }
+            .login-body {
+                padding: 1rem;
+                flex: 1;
+            }
+            .login-footer {
+                padding: 1rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .login-container {
+                max-width: 420px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" role="main" aria-labelledby="login-title">
+        <header class="login-header">
+            <h1 id="login-title">Hệ thống Quản lý Sinh viên</h1>
+            <p>Đăng nhập để tiếp tục</p>
+        </header>
+
+        <section class="login-body">
+            <form id="loginForm" novalidate>
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="example@student.edu.vn" 
+                        autocomplete="username" 
+                        required 
+                        aria-required="true">
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            autocomplete="current-password" 
+                            required 
+                            aria-required="true">
+                        <button 
+                            type="button" 
+                            class="password-toggle" 
+                            aria-label="Hiển thị mật khẩu" 
+                            tabindex="-1">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="form-options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="remember">
+                        <span>Nhớ tôi</span>
+                    </label>
+                    <a href="#" class="forgot-link">Quên mật khẩu?</a>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-login">Đăng nhập</button>
+            </form>
+        </section>
+
+        <footer class="login-footer">
+            © 2025 Đại học XYZ. Mọi quyền được bảo lưu.
+        </footer>
+    </div>
+
+    <script>
+        // Password toggle
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.querySelector('.password-toggle');
+        let isVisible = false;
+
+        toggleBtn.addEventListener('click', () => {
+            isVisible = !isVisible;
+            passwordInput.type = isVisible ? 'text' : 'password';
+            toggleBtn.textContent = isVisible ? '🙈' : '👁️';
+            toggleBtn.setAttribute('aria-label', isVisible ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu');
+        });
+
+        // Basic form validation (demo)
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                alert('Vui lòng nhập đầy đủ email và mật khẩu.');
+                return;
+            }
+            // Thực tế: gọi API
+            alert('Đăng nhập thành công! (demo)');
+        });
+    </script>
+</body>
+</html>

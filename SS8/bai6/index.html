@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Quản trị - Hệ thống</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* === NGUYÊN TẮC UI/UX ÁP DỤNG ===
+         * 1. Visual Hierarchy: Thống kê lớn > Biểu đồ > Bảng.
+         * 2. Grid Layout: Responsive, khoảng cách đều (24px gutter).
+         * 3. Card Design: Shadow, bo góc, padding nhất quán.
+         * 4. Color Coding: Xanh dương (tăng trưởng), xanh lá (hoàn thành), đỏ (hủy).
+         * 5. Accessibility: aria-label, contrast ≥4.5:1, keyboard focus.
+         * 6. Responsive: Mobile → stack vertical, Desktop → 3 cột.
+         */
+
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 16px rgba(0,0,0,.12);
+            --transition: all .2s ease;
+            --gutter: 1.5rem;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--gutter);
+        }
+
+        /* === HEADER === */
+        .dashboard-header {
+            margin-bottom: calc(var(--gutter) * 1.5);
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 0 0 .5rem;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        /* === GRID LAYOUT === */
+        .dashboard-grid {
+            display: grid;
+            gap: var(--gutter);
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        /* === CARD BASE === */
+        .card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .card-title i {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        /* === STAT CARD (Tổng người dùng) === */
+        .stat-card {
+            grid-column: span 4;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.9375rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .35rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: .75rem;
+        }
+
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+
+        /* === CHART CARD === */
+        .chart-card {
+            grid-column: span 8;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* === TABLE CARD === */
+        .table-card {
+            grid-column: span 12;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9375rem;
+        }
+
+        thead {
+            background: var(--gray-100);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .35rem .75rem;
+            border-radius: 2rem;
+            font-size: .8125rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-processing { background: rgba(245,158,11,.15); color: var(--warning); }
+        .status-completed { background: rgba(16,185,129,.15); color: var(--success); }
+        .status-cancelled { background: rgba(239,68,68,.15); color: var(--danger); }
+
+        .status-badge i { font-size: .875rem; }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 992px) {
+            .stat-card,
+            .chart-card {
+                grid-column: span 12;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .dashboard-title {
+                font-size: 1.75rem;
+            }
+
+            .card {
+                padding: 1.25rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            th, td {
+                padding: .75rem .5rem;
+                font-size: .875rem;
+            }
+
+            .status-badge {
+                padding: .25rem .5rem;
+                font-size: .75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                gap: 1rem;
+            }
+
+            table {
+                min-width: 600px;
+                font-size: .8125rem;
+            }
+
+            .table-card {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">Dashboard Quản trị</h1>
+            <p class="dashboard-subtitle">Tổng quan hoạt động hệ thống</p>
+        </header>
+
+        <!-- Grid Layout -->
+        <div class="dashboard-grid">
+            <!-- Tổng số người dùng -->
+            <div class="card stat-card" role="region" aria-labelledby="users-title">
+                <div class="card-header">
+                    <h3 id="users-title" class="card-title">
+                        <i class="fas fa-users"></i> Tổng người dùng
+                    </h3>
+                </div>
+                <div class="stat-value">8,429</div>
+                <p class="stat-label">Tăng 12% so với tháng trước</p>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i> +1,203
+                </div>
+            </div>
+
+            <!-- Biểu đồ doanh thu -->
+            <div class="card chart-card" role="region" aria-labelledby="revenue-title">
+                <div class="card-header">
+                    <h3 id="revenue-title" class="card-title">
+                        <i class="fas fa-chart-line"></i> Doanh thu theo tháng
+                    </h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Danh sách đơn hàng gần đây -->
+            <div class="card table-card" role="region" aria-labelledby="orders-title">
+                <div class="card-header">
+                    <h3 id="orders-title" class="card-title">
+                        <i class="fas fa-shopping-cart"></i> Đơn hàng gần đây
+                    </h3>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table aria-label="Danh sách đơn hàng gần đây">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Tên khách</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>#DH001234</code></td>
+                                <td>Nguyễn Văn An</td>
+                                <td><span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Hoàn thành</span></td>
+                                <td>17/11/2025</td>
+                            </tr>
+                            <tr>
+                                <td><code>#DH001235</code></td>
+                                <td>Trần Thị Bình</td>
+                                <td><span class="status-badge status-processing"><i class="fas fa-clock"></i> Đang xử lý</span></td>
+                                <td>16/11/2025</td>
+                            </tr>
+                            <tr>
+                                <td><code>#DH001236</code></td>
+                                <td>Lê Minh Châu</td>
+                                <td><span class="status-badge status-cancelled"><i class="fas fa-times-circle"></i> Hủy</span></td>
+                                <td>15/11/2025</td>
+                            </tr>
+                            <tr>
+                                <td><code>#DH001237</code></td>
+                                <td>Phạm Quốc Dũng</td>
+                                <td><span class="status-badge status-processing"><i class="fas fa-clock"></i> Đang xử lý</span></td>
+                                <td>14/11/2025</td>
+                            </tr>
+                            <tr>
+                                <td><code>#DH001238</code></td>
+                                <td>Hoàng Thị Lan</td>
+                                <td><span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Hoàn thành</span></td>
+                                <td>13/11/2025</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Biểu đồ doanh thu (Chart.js)
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                datasets: [{
+                    label: 'Doanh thu (triệu VNĐ)',
+                    data: [65, 78, 82, 90, 88, 95, 110, 125, 132, 140, 155, 168],
+                    borderColor: 'rgba(67, 97, 238, 1)',
+                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: 'rgba(67, 97, 238, 1)',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,.8)',
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,.05)' },
+                        ticks: { callback: value => value + 'M' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
